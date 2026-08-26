@@ -27,11 +27,21 @@ async function initializeSchema(database: SQLite.SQLiteDatabase): Promise<void> 
     'SELECT version FROM schema_version LIMIT 1'
   );
 
+  const currentVersion = row?.version ?? 0;
+
   if (!row) {
     await database.runAsync('INSERT INTO schema_version (version) VALUES (?)', [SCHEMA_VERSION]);
   }
 
+  await runMigrations(database, currentVersion);
   await seedDefaultContexts(database);
+}
+
+async function runMigrations(database: SQLite.SQLiteDatabase, fromVersion: number): Promise<void> {
+  if (fromVersion < 2) {
+    await database.execAsync('ALTER TABLE calendar_events ADD COLUMN description TEXT;');
+    await database.runAsync('UPDATE schema_version SET version = 2');
+  }
 }
 
 async function seedDefaultContexts(database: SQLite.SQLiteDatabase): Promise<void> {

@@ -168,6 +168,9 @@ export default function CalendarScreen() {
               {item.location && (
                 <Text style={styles.eventLocation} numberOfLines={1}>{item.location}</Text>
               )}
+              {item.description && (
+                <Text style={styles.eventDescription} numberOfLines={3}>{item.description}</Text>
+              )}
             </View>
           </TouchableOpacity>
         )}
@@ -227,6 +230,7 @@ const styles = StyleSheet.create({
   eventRight: { flex: 1 },
   eventTitle: { fontSize: 15, fontWeight: '600', color: '#111' },
   eventLocation: { fontSize: 12, color: '#888', marginTop: 2 },
+  eventDescription: { fontSize: 12, color: '#666', marginTop: 4, lineHeight: 16 },
   emptyText: { color: '#aaa', fontSize: 14, textAlign: 'center', marginTop: 24 },
   hint: { fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 8 },
 });

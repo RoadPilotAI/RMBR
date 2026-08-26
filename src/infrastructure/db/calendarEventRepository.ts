@@ -7,6 +7,7 @@ interface CalendarEventRow {
   calendar_source_id: string;
   external_uid: string;
   title: string;
+  description: string | null;
   start_at: string;
   end_at: string;
   time_zone: string | null;
@@ -25,6 +26,7 @@ function rowToEvent(row: CalendarEventRow): CalendarEvent {
     calendarSourceId: row.calendar_source_id,
     externalUid: row.external_uid,
     title: row.title,
+    description: row.description,
     startAt: row.start_at,
     endAt: row.end_at,
     timeZone: row.time_zone,
@@ -54,14 +56,15 @@ export async function upsertCalendarEvents(
     if (!existing) {
       await db.runAsync(
         `INSERT INTO calendar_events
-         (id, calendar_source_id, external_uid, title, start_at, end_at,
+         (id, calendar_source_id, external_uid, title, description, start_at, end_at,
           time_zone, location, all_day, recurrence_rule, last_seen_at, source_hash, created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           generateId(),
           calendarSourceId,
           event.externalUid,
           event.title,
+          event.description,
           event.startAt.toISOString(),
           event.endAt.toISOString(),
           event.timeZone,
@@ -77,11 +80,12 @@ export async function upsertCalendarEvents(
     } else if (existing.source_hash !== event.sourceHash) {
       await db.runAsync(
         `UPDATE calendar_events
-         SET title = ?, start_at = ?, end_at = ?, time_zone = ?, location = ?,
+         SET title = ?, description = ?, start_at = ?, end_at = ?, time_zone = ?, location = ?,
              all_day = ?, recurrence_rule = ?, last_seen_at = ?, source_hash = ?, updated_at = ?
          WHERE id = ?`,
         [
           event.title,
+          event.description,
           event.startAt.toISOString(),
           event.endAt.toISOString(),
           event.timeZone,

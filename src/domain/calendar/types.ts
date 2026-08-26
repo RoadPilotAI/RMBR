@@ -17,6 +17,7 @@ export interface CalendarEvent {
   calendarSourceId: string;
   externalUid: string;
   title: string;
+  description: string | null;
   startAt: string;
   endAt: string;
   timeZone: string | null;
@@ -32,6 +33,7 @@ export interface CalendarEvent {
 export interface ParsedCalendarEvent {
   externalUid: string;
   title: string;
+  description: string | null;
   startAt: Date;
   endAt: Date;
   timeZone: string | null;

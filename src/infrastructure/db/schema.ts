@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 export const CREATE_TABLES_SQL = `
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   end_at TEXT NOT NULL,
   time_zone TEXT,
   location TEXT,
+  description TEXT,
   all_day INTEGER NOT NULL DEFAULT 0,
   recurrence_rule TEXT,
   last_seen_at TEXT NOT NULL,

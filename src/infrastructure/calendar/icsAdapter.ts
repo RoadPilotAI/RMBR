@@ -77,12 +77,15 @@ function parseVEvent(
 
   const location: string | null = event.location ?? null;
 
+  const descriptionRaw = vevent.getFirstPropertyValue('description');
+  const description: string | null = descriptionRaw ? String(descriptionRaw).trim() : null;
+
   const rruleProp = vevent.getFirstPropertyValue('rrule');
   const recurrenceRule: string | null = rruleProp ? String(rruleProp) : null;
 
-  const sourceHash = hashEvent(uid, title, startJs.toISOString(), endJs.toISOString());
+  const sourceHash = hashEvent(uid, title, startJs.toISOString(), endJs.toISOString(), description ?? '');
 
-  return { externalUid: uid, title, startAt: startJs, endAt: endJs, timeZone, location, allDay, recurrenceRule, sourceHash };
+  return { externalUid: uid, title, description, startAt: startJs, endAt: endJs, timeZone, location, allDay, recurrenceRule, sourceHash };
 }
 
 interface ICALTime {
