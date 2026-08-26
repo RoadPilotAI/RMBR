@@ -30,12 +30,10 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
-.env*.local
+# local env files — NEVER commit real calendar URLs or secrets
 .env
-.env.local
-.env.development
-.env.production
+.env.*
+!.env.example
 
 # secrets — never commit calendar URLs or credentials
 *.ics
@@ -47,3 +45,12 @@ calendar-secrets.*
 # generated native folders
 /ios
 /android
+
+# coverage
+coverage/
+*.lcov
+.nyc_output
+
+# misc
+.eslintcache
+.npm
