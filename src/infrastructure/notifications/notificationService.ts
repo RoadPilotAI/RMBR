@@ -1,5 +1,6 @@
 import * as Notifications from 'expo-notifications';
 
+// Must be called at module load time (outside components).
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
@@ -10,19 +11,25 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export const NOTIFICATION_CATEGORY_TASK = 'TASK_REMINDER';
+export const CATEGORY_TASK_REMINDER = 'TASK_REMINDER';
+export const CATEGORY_CALENDAR_TRANSITION = 'CALENDAR_TRANSITION';
 
 export async function registerNotificationCategories(): Promise<void> {
-  await Notifications.setNotificationCategoryAsync(NOTIFICATION_CATEGORY_TASK, [
+  await Notifications.setNotificationCategoryAsync(CATEGORY_TASK_REMINDER, [
     { identifier: 'DO_NOW', buttonTitle: 'Do Now', options: { opensAppToForeground: true } },
     { identifier: 'RESCHEDULE', buttonTitle: 'Reschedule', options: { opensAppToForeground: true } },
-    { identifier: 'WAITING', buttonTitle: 'Waiting', options: { opensAppToForeground: true } },
+    { identifier: 'WAITING', buttonTitle: 'Waiting on Someone', options: { opensAppToForeground: true } },
     { identifier: 'BLOCKED', buttonTitle: 'Blocked', options: { opensAppToForeground: true } },
     {
       identifier: 'CANCEL',
       buttonTitle: 'No Longer Needed',
       options: { opensAppToForeground: false, isDestructive: true },
     },
+  ]);
+
+  await Notifications.setNotificationCategoryAsync(CATEGORY_CALENDAR_TRANSITION, [
+    { identifier: 'ACKNOWLEDGED', buttonTitle: 'Got It', options: { opensAppToForeground: false } },
+    { identifier: 'SNOOZE_5', buttonTitle: 'Remind in 5 min', options: { opensAppToForeground: false } },
   ]);
 }
 
@@ -40,20 +47,47 @@ export async function scheduleTaskReminder(params: {
   body: string;
   triggerAt: Date;
 }): Promise<string> {
-  const id = await Notifications.scheduleNotificationAsync({
+  return Notifications.scheduleNotificationAsync({
     identifier: params.notificationId,
     content: {
       title: params.title,
       body: params.body,
       data: { taskId: params.taskId },
-      categoryIdentifier: NOTIFICATION_CATEGORY_TASK,
+      categoryIdentifier: CATEGORY_TASK_REMINDER,
     },
     trigger: {
       type: Notifications.SchedulableTriggerInputTypes.DATE,
       date: params.triggerAt,
     },
   });
-  return id;
+}
+
+export async function scheduleCalendarTransitionReminder(params: {
+  calendarEventId: string;
+  eventTitle: string;
+  minutesBefore: number;
+  eventStartAt: Date;
+}): Promise<string> {
+  const triggerAt = new Date(
+    params.eventStartAt.getTime() - params.minutesBefore * 60 * 1000
+  );
+
+  if (triggerAt <= new Date()) {
+    throw new Error('Trigger time is in the past — cannot schedule notification');
+  }
+
+  return Notifications.scheduleNotificationAsync({
+    content: {
+      title: `Starting in ${params.minutesBefore} min`,
+      body: params.eventTitle,
+      data: { calendarEventId: params.calendarEventId, type: 'calendar_transition' },
+      categoryIdentifier: CATEGORY_CALENDAR_TRANSITION,
+    },
+    trigger: {
+      type: Notifications.SchedulableTriggerInputTypes.DATE,
+      date: triggerAt,
+    },
+  });
 }
 
 export async function cancelNotification(platformNotificationId: string): Promise<void> {
