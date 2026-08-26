@@ -32,6 +32,14 @@ yarn-error.*
 
 # local env files
 .env*.local
+.env
+.env.local
+.env.development
+.env.production
+
+# secrets — never commit calendar URLs or credentials
+*.ics
+calendar-secrets.*
 
 # typescript
 *.tsbuildinfo
