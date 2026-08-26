@@ -2,6 +2,7 @@
   "expo": {
     "name": "RMBR",
     "slug": "rmbr",
+    "owner": "normrobichaud",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -15,6 +16,7 @@
       }
     },
     "android": {
+      "package": "com.rmbr.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
