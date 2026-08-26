@@ -1,6 +1,7 @@
 import { IcsAdapter } from '../infrastructure/calendar/icsAdapter';
 import { retrieveCalendarUrl } from '../infrastructure/secure-storage/calendarSecrets';
 import {
+  getCalendarSource,
   listCalendarSources,
   updateCalendarSourceSyncResult,
 } from '../infrastructure/db/calendarSourceRepository';
@@ -9,7 +10,9 @@ import { upsertCalendarEvents } from '../infrastructure/db/calendarEventReposito
 const adapter = new IcsAdapter();
 
 export async function syncCalendarSource(sourceId: string): Promise<void> {
-  const url = await retrieveCalendarUrl(sourceId);
+  const source = await getCalendarSource(sourceId);
+  if (!source) throw new Error(`Calendar source ${sourceId} not found`);
+  const url = await retrieveCalendarUrl(source.secureStorageKey);
   if (!url) throw new Error(`No URL stored for source ${sourceId}`);
 
   try {
