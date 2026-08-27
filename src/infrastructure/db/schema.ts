@@ -1,4 +1,4 @@
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export const CREATE_TABLES_SQL = `
 CREATE TABLE IF NOT EXISTS schema_version (
@@ -115,6 +115,31 @@ CREATE TABLE IF NOT EXISTS plan_conflicts (
   calendar_event_id TEXT NOT NULL REFERENCES calendar_events(id) ON DELETE CASCADE,
   detected_at TEXT NOT NULL,
   resolved_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS calendar_rules (
+  id TEXT PRIMARY KEY NOT NULL,
+  calendar_source_id TEXT NOT NULL REFERENCES calendar_sources(id) ON DELETE CASCADE,
+  trigger_type TEXT NOT NULL CHECK(trigger_type IN (
+    'first_event_of_day','last_event_of_day','workday_midpoint','event_start','event_end'
+  )),
+  offset_minutes INTEGER NOT NULL DEFAULT 0,
+  message TEXT NOT NULL,
+  active INTEGER NOT NULL DEFAULT 1,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS rule_notifications (
+  id TEXT PRIMARY KEY NOT NULL,
+  rule_id TEXT NOT NULL REFERENCES calendar_rules(id) ON DELETE CASCADE,
+  calendar_source_id TEXT NOT NULL REFERENCES calendar_sources(id) ON DELETE CASCADE,
+  date_key TEXT NOT NULL,
+  fire_at TEXT NOT NULL,
+  platform_notification_id TEXT,
+  state TEXT NOT NULL DEFAULT 'scheduled' CHECK(state IN ('scheduled','cancelled')),
+  created_at TEXT NOT NULL,
+  UNIQUE(rule_id, date_key)
 );
 
 CREATE TABLE IF NOT EXISTS external_prompts (

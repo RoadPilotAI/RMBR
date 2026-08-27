@@ -27,13 +27,13 @@ async function initializeSchema(database: SQLite.SQLiteDatabase): Promise<void> 
     'SELECT version FROM schema_version LIMIT 1'
   );
 
-  const currentVersion = row?.version ?? 0;
-
   if (!row) {
+    // Fresh install — all tables already created above via CREATE TABLE IF NOT EXISTS.
     await database.runAsync('INSERT INTO schema_version (version) VALUES (?)', [SCHEMA_VERSION]);
+  } else {
+    await runMigrations(database, row.version);
   }
 
-  await runMigrations(database, currentVersion);
   await seedDefaultContexts(database);
 }
 
@@ -41,6 +41,10 @@ async function runMigrations(database: SQLite.SQLiteDatabase, fromVersion: numbe
   if (fromVersion < 2) {
     await database.execAsync('ALTER TABLE calendar_events ADD COLUMN description TEXT;');
     await database.runAsync('UPDATE schema_version SET version = 2');
+  }
+  if (fromVersion < 3) {
+    // calendar_rules and rule_notifications are created by CREATE TABLE IF NOT EXISTS above.
+    await database.runAsync('UPDATE schema_version SET version = 3');
   }
 }
 

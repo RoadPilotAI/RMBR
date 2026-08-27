@@ -124,6 +124,21 @@ export async function listUpcomingEvents(
   return rows.map(rowToEvent);
 }
 
+export async function listUpcomingEventsBySource(
+  calendarSourceId: string,
+  fromDate: Date,
+  toDate: Date
+): Promise<CalendarEvent[]> {
+  const db = await getDatabase();
+  const rows = await db.getAllAsync<CalendarEventRow>(
+    `SELECT * FROM calendar_events
+     WHERE calendar_source_id = ? AND start_at >= ? AND start_at <= ?
+     ORDER BY start_at ASC`,
+    [calendarSourceId, fromDate.toISOString(), toDate.toISOString()]
+  );
+  return rows.map(rowToEvent);
+}
+
 export async function listEventsBySource(calendarSourceId: string): Promise<CalendarEvent[]> {
   const db = await getDatabase();
   const rows = await db.getAllAsync<CalendarEventRow>(

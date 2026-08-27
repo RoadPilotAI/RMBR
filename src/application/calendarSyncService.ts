@@ -6,6 +6,7 @@ import {
   updateCalendarSourceSyncResult,
 } from '../infrastructure/db/calendarSourceRepository';
 import { upsertCalendarEvents } from '../infrastructure/db/calendarEventRepository';
+import { scheduleRulesForSource } from './ruleSchedulingService';
 
 const adapter = new IcsAdapter();
 
@@ -19,6 +20,7 @@ export async function syncCalendarSource(sourceId: string): Promise<void> {
     const events = await adapter.fetchAndParse(url);
     await upsertCalendarEvents(sourceId, events);
     await updateCalendarSourceSyncResult(sourceId, { success: true });
+    await scheduleRulesForSource(sourceId);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     await updateCalendarSourceSyncResult(sourceId, { success: false, error: message });

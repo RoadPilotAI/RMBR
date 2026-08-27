@@ -4,6 +4,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  Switch,
   StyleSheet,
   ActivityIndicator,
   Alert,
@@ -15,6 +16,7 @@ import { router } from 'expo-router';
 import { createCalendarSource } from '../src/infrastructure/db/calendarSourceRepository';
 import { storeCalendarUrl } from '../src/infrastructure/secure-storage/calendarSecrets';
 import { syncCalendarSource } from '../src/application/calendarSyncService';
+import { createCalendarRule } from '../src/infrastructure/db/calendarRuleRepository';
 import { generateId } from '../src/shared/ids';
 
 const CONTEXTS = [
@@ -22,10 +24,38 @@ const CONTEXTS = [
   { id: 'ctx-personal', label: 'Personal' },
 ];
 
+async function seedAdpRules(calendarSourceId: string): Promise<void> {
+  await createCalendarRule({
+    calendarSourceId,
+    triggerType: 'first_event_of_day',
+    offsetMinutes: -5,
+    message: 'Clock in on ADP — your shift starts in 5 min',
+  });
+  await createCalendarRule({
+    calendarSourceId,
+    triggerType: 'last_event_of_day',
+    offsetMinutes: 0,
+    message: 'Clock out on ADP — your shift has ended',
+  });
+  await createCalendarRule({
+    calendarSourceId,
+    triggerType: 'workday_midpoint',
+    offsetMinutes: 0,
+    message: 'Clock out on ADP — time for lunch',
+  });
+  await createCalendarRule({
+    calendarSourceId,
+    triggerType: 'workday_midpoint',
+    offsetMinutes: 30,
+    message: 'Clock back in on ADP — lunch is over',
+  });
+}
+
 export default function AddSourceScreen() {
   const [name, setName] = useState('');
   const [url, setUrl] = useState('');
   const [contextId, setContextId] = useState('ctx-work');
+  const [adpReminders, setAdpReminders] = useState(true);
   const [saving, setSaving] = useState(false);
 
   async function handleSave() {
@@ -50,6 +80,11 @@ export default function AddSourceScreen() {
         contextId,
         secureStorageKey,
       });
+
+      if (contextId === 'ctx-work' && adpReminders) {
+        await seedAdpRules(source.id);
+      }
+
       await syncCalendarSource(source.id);
       router.back();
     } catch (err) {
@@ -110,6 +145,18 @@ export default function AddSourceScreen() {
           ))}
         </View>
 
+        {contextId === 'ctx-work' && (
+          <View style={styles.toggleRow}>
+            <View style={styles.toggleText}>
+              <Text style={styles.toggleLabel}>ADP clock-in/out reminders</Text>
+              <Text style={styles.toggleSub}>
+                Alerts 5 min before shift, at shift end, and at lunch start/end
+              </Text>
+            </View>
+            <Switch value={adpReminders} onValueChange={setAdpReminders} />
+          </View>
+        )}
+
         <TouchableOpacity
           style={[styles.saveButton, saving && styles.saveButtonDisabled]}
           onPress={handleSave}
@@ -138,6 +185,10 @@ const styles = StyleSheet.create({
   contextChipActive: { backgroundColor: '#007AFF', borderColor: '#007AFF' },
   contextChipText: { fontSize: 15, color: '#333' },
   contextChipTextActive: { color: '#fff', fontWeight: '600' },
+  toggleRow: { flexDirection: 'row', alignItems: 'center', marginTop: 20, gap: 12 },
+  toggleText: { flex: 1 },
+  toggleLabel: { fontSize: 15, fontWeight: '600', color: '#111' },
+  toggleSub: { fontSize: 12, color: '#888', marginTop: 2 },
   saveButton: { marginTop: 32, backgroundColor: '#007AFF', borderRadius: 10, padding: 16, alignItems: 'center' },
   saveButtonDisabled: { opacity: 0.6 },
   saveButtonText: { color: '#fff', fontSize: 16, fontWeight: '700' },
