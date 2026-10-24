@@ -181,10 +181,22 @@ docs/
   PRODUCT_HANDOFF.md          Detailed vision and failure-mode design
   IMPLEMENTATION_PLAN.md      Planned phases, exit criteria, device checklist
   GITHUB_ISSUES.md            Initial proposed engineering issue definitions
+  research/
+    The_Shared_Load_Playbook.md  Full research/workbook text in Markdown
 CLAUDE.md                     Repository engineering/product guardrails
 AGENTS.md                     Agent guidance
 .github/workflows/ci.yml      CI configuration
 ```
+
+## Research foundation: The Shared Load Playbook
+
+[**Read The Shared Load Playbook (full Markdown edition)**](docs/research/The_Shared_Load_Playbook.md)
+
+*The Shared Load Playbook: A Practical Guide to Dividing Physical Work, Mental Load, Relationship Work, and Household Responsibility Fairly* (August 2026) is a standalone learning guide and couple workbook examining physical, cognitive, relational, and availability-related household loads.
+
+It informs RMBR's approach to **whole-loop ownership**, external supports for memory and initiation, and reliability without transferring the reminder burden to another person. Its **CARE** framework (Capacity, Availability, Reliability, Effort) offers a way to think about realistic responsibilities and individual constraints.
+
+The Playbook is **background research, not an app specification**: RMBR is an individual executive-function support tool, not a household fairness scoring system or a partner-monitoring portal. The original Word document remains a separate source; this repository contains its full Markdown conversion.
 
 ## Development roadmap
 
